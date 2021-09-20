@@ -48,7 +48,7 @@ def callback(data):
 	mask = cv2.dilate(mask0+mask1, np.ones((5,5), np.uint8))
 
 
-	_, contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+	contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 	# print("Contours" + str(contours))
 	centroid = 0
@@ -87,7 +87,8 @@ def callback(data):
 		processed_image = cv_image
 
 	
-	
+	#NOW if centroid[0] is in the left half turn left, right turn right, else, stop
+
 
 	#Start detecting diamonds
 	# processed_image = diamond_finder.find_diamond(templ, cv_image)
@@ -98,6 +99,8 @@ def callback(data):
 	cv2.imshow("Processed Stream", processed_image)
 
 	# im = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
+
+
 
 	# if img is None:
 	# 	plt.figure(1)
@@ -119,6 +122,8 @@ def listener():
 	rospy.init_node('find_object_node', anonymous=True)
 
 	rospy.Subscriber("/raspicam_node/image/compressed",CompressedImage,callback, queue_size = 1, buff_size=2**24)
+
+	
 
 	rospy.spin()
 
