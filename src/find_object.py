@@ -8,7 +8,7 @@ import cv2
 from diamond_finder import diamond_finder
 import numpy as np
 import sys
-from pympler.asizeof import asizeof
+#from pympler.asizeof import asizeof
 
 # import matplotlib.pyplot as plt
 
@@ -69,7 +69,7 @@ def callback(data):
 		right, bottom = np.max(boxes, axis=0)[2:]
 
 		cropped_cv = cv_image[top:bottom, left:right]
-		cv2.imshow("cropped", cropped_cv)
+		#cv2.imshow("cropped", cropped_cv)
 
 		(tH, tW) = templ.shape[:2]
 		(iH, iW) = cropped_cv.shape[:2]
@@ -81,7 +81,7 @@ def callback(data):
 			if centroid != 0:
 				centroid = (centroid[0] + left, centroid[1] + top)
 				print("shifted centroid from df.py: ", centroid)
-				cv2.putText(processed_image, "C", centroid,cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),1, cv2.LINE_AA)
+				#cv2.putText(processed_image, "C", centroid,cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),1, cv2.LINE_AA)
 			else:
 				centroid = (w/2, h/2)
 		else:
@@ -117,8 +117,8 @@ def callback(data):
 	# processed_image = cv_image
 
 	#Display the frames
-	cv2.imshow("mask", mask)
-	cv2.imshow("Processed Stream", processed_image)
+	#cv2.imshow("mask", mask)
+	#cv2.imshow("Processed Stream", processed_image)
 
 	# im = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
 
