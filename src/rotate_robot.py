@@ -11,11 +11,11 @@ def callback(data):
 	move_cmd = Twist()
 
 	if data.x <= 0.4:
-		move_cmd.angular.z = 0.1
+		move_cmd.angular.z = 0.15
 		#Turn left
 	elif data.x >= 0.6:
 		#turn right
-		move_cmd.angular.z = -0.1
+		move_cmd.angular.z = -0.15
 	else:
 		#Stop
 		move_cmd.angular.z = 0.0

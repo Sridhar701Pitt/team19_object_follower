@@ -80,12 +80,12 @@ class diamond_finder:
             #     cv2.rectangle(img, (startX, startY), (endX, endY), (0,215,255), 1)
             #     print("[" + f + " " + str(startX) + " " + str(startY) + "]")
             
-            print(picks)
+            # print(picks)
 
             mean_picks = np.mean(picks,axis=0)
-            print(mean_picks)
+            # print(mean_picks)
             centroid = (int(round((mean_picks[0] + mean_picks[2])/2)),int(round((mean_picks[1] +mean_picks[3])/2)))
-            print(centroid)
+            # print(centroid)
             #cv2.putText(img, "Diamonds Found: " + str(len(picks)), (10, 300),cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),1, cv2.LINE_AA)
             ##cv2.imshow("After NMS", img)
             return centroid

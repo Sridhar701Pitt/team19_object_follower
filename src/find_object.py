@@ -12,6 +12,8 @@ from pympler.asizeof import asizeof
 
 # import matplotlib.pyplot as plt
 
+from geometry_msgs.msg import Point
+
 #bridge = CvBridge()
 templ = cv2.imread("./src/team19_object_follower/src/template.jpg", cv2.IMREAD_COLOR)
 img = None
@@ -30,7 +32,9 @@ def callback(data):
 
 	np_arr = np.fromstring(data.data, np.uint8)
 	cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+	h, w = cv_image.shape[:2]
 
+	print("Height & Width: ", h, w)
 
 	cv_hsv=cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
 
@@ -52,12 +56,13 @@ def callback(data):
 	contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 	# print("Contours" + str(contours))
-	centroid = 0
+	centroid = (w/2 , h/2)
+	print(centroid)
 	if contours != []:
 		boxes = []	
 		for c in contours:
-		    (x, y, w, h) = cv2.boundingRect(c)
-		    boxes.append([x,y, x+w,y+h])
+		    (x1, y1, x2, y2) = cv2.boundingRect(c)
+		    boxes.append([x1, y1, x1 + x2, y1 + y2])
 
 		boxes = np.asarray(boxes)
 		left, top = np.min(boxes, axis=0)[:2]
@@ -71,25 +76,41 @@ def callback(data):
 		# print("th = " + str(tH) + "  tW = " + str(tW) + "  iH = " + str(iH) + "  iW = " + str(iW))
 		if iH >= tH and iW >= tW:
 			centroid = diamond_finder.find_diamond(templ, cropped_cv)
+			print("centroid from df.py: ", centroid)
 			processed_image = cv_image
 			if centroid != 0:
-				print(centroid)
-				centroid = (centroid[0]+left,centroid[1]+top)
+				centroid = (centroid[0] + left, centroid[1] + top)
+				print("shifted centroid from df.py: ", centroid)
 				cv2.putText(processed_image, "C", centroid,cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),1, cv2.LINE_AA)
-			
+			else:
+				centroid = (w/2, h/2)
 		else:
-			centroid = 0
+			centroid = (w/2, h/2)
 			processed_image = cv_image
 
 
 		cv2.rectangle(cv_image, (left,top), (right,bottom), (255, 0, 0), 2)
 	else:
-		centroid = 0
+		centroid = (w/2, h/2)
 		processed_image = cv_image
 
 	
 	#NOW if centroid[0] is in the left half turn left, right turn right, else, stop
 
+	print("centroid after for loop: ", centroid)
+
+	print("scaling factors: ", w, h)
+	
+	centroid = (centroid[0] / float(w), centroid[1] / float(h))
+
+	print("scaled centroid: ", centroid)
+
+	centroid_coords = Point()
+	centroid_coords.x = centroid[0]
+	centroid_coords.y = centroid[1]
+
+	rospy.loginfo(centroid_coords)
+	pub.publish(centroid_coords)
 
 	#Start detecting diamonds
 	# processed_image = diamond_finder.find_diamond(templ, cv_image)
@@ -124,7 +145,9 @@ def listener():
 
 	rospy.Subscriber("/raspicam_node/image/compressed",CompressedImage,callback, queue_size = 1, buff_size=2**24)
 
-	
+	global pub
+	pub = rospy.Publisher("/robot/centroid", Point, queue_size = 1)
+	#rate = rospy.Rate(10) 
 
 	rospy.spin()
 
@@ -134,4 +157,5 @@ def manual_shutdown():
 
 if __name__ == '__main__':
 
-	listener()
+	while not rospy.is_shutdown():	
+		listener()
