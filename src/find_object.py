@@ -10,12 +10,13 @@ import numpy as np
 import sys
 from pympler.asizeof import asizeof
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 #bridge = CvBridge()
 templ = cv2.imread("./src/team19_object_follower/src/template.jpg", cv2.IMREAD_COLOR)
 img = None
 
+print("Hello")
 
 def callback(data):
 	global img
