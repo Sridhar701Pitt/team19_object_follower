@@ -14,7 +14,14 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   cv_bridge
+  roslaunch
 )
+
+## Check for common error in launch files
+if (CATKIN_ENABLE_TESTING)
+  find_package(roslaunch REQUIRED)
+  roslaunch_add_file_check(launch)
+endif()
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
