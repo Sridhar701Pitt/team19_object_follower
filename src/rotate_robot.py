@@ -10,15 +10,16 @@ def callback(data):
 	# Twist message template to send to /cmd_vel topic
 	move_cmd = Twist()
 
-	if data.x <= 0.4:
-		move_cmd.angular.z = 0.15
-		#Turn left
-	elif data.x >= 0.6:
-		#turn right
-		move_cmd.angular.z = -0.15
+	k_p = 1.5
+
+	error = (0.5 - data.x)
+
+	if abs(error) < 0.1:
+	    move_cmd.angular.z = 0
+	
 	else:
-		#Stop
-		move_cmd.angular.z = 0.0
+	    move_cmd.angular.z = k_p * error
+	
 
 	pubVel.publish(move_cmd)
 

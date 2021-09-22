@@ -9,20 +9,26 @@ from diamond_finder import diamond_finder
 import numpy as np
 import sys
 #from pympler.asizeof import asizeof
-
+import os
+import imutils
 # import matplotlib.pyplot as plt
 
 from geometry_msgs.msg import Point
-
+__location__ = os.path.realpath(
+	os.path.join(os.getcwd(), os.path.dirname(__file__)))
 #bridge = CvBridge()
-templ = cv2.imread("./src/team19_object_follower/src/template.jpg", cv2.IMREAD_COLOR)
+templ = cv2.imread(os.path.join(__location__, 'template.jpg'), cv2.IMREAD_COLOR)
+
+input_img_scale = 0.5
+templ = imutils.resize(templ, width = int(templ.shape[1] * input_img_scale))
+
 img = None
 
-print("Hello")
+#print("Hello")
 
 def callback(data):
 	global img
-	print("Delay:%6.3f" % (rospy.Time.now() - data.header.stamp).to_sec())
+#	print("Delay:%6.3f" % (rospy.Time.now() - data.header.stamp).to_sec())
 	#rospy.loginfo(rospy.get_caller_id() + " find_object input data: " + data.encoding)
 	
 	# try:
@@ -32,9 +38,13 @@ def callback(data):
 
 	np_arr = np.fromstring(data.data, np.uint8)
 	cv_image = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-	h, w = cv_image.shape[:2]
 
-	print("Height & Width: ", h, w)
+	#Do some pre resizing
+	cv_image = imutils.resize(cv_image, width = int(cv_image.shape[1] * input_img_scale))
+
+	h, w, _ = cv_image.shape
+
+#	print("Width & Height: ", w, h)
 
 	cv_hsv=cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
 
@@ -53,13 +63,13 @@ def callback(data):
 	mask = cv2.dilate(mask0+mask1, np.ones((5,5), np.uint8))
 
 
-	contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+	_, contours, _ = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
 	# print("Contours" + str(contours))
 	centroid = (w/2 , h/2)
-	print(centroid)
+#	print(centroid)
 	if contours != []:
-		boxes = []	
+		boxes = []
 		for c in contours:
 		    (x1, y1, x2, y2) = cv2.boundingRect(c)
 		    boxes.append([x1, y1, x1 + x2, y1 + y2])
@@ -71,16 +81,16 @@ def callback(data):
 		cropped_cv = cv_image[top:bottom, left:right]
 		#cv2.imshow("cropped", cropped_cv)
 
-		(tH, tW) = templ.shape[:2]
-		(iH, iW) = cropped_cv.shape[:2]
+		(tH, tW, _) = templ.shape
+		(iH, iW, _) = cropped_cv.shape
 		# print("th = " + str(tH) + "  tW = " + str(tW) + "  iH = " + str(iH) + "  iW = " + str(iW))
 		if iH >= tH and iW >= tW:
 			centroid = diamond_finder.find_diamond(templ, cropped_cv)
-			print("centroid from df.py: ", centroid)
+#			print("centroid from df.py: ", centroid)
 			processed_image = cv_image
 			if centroid != 0:
 				centroid = (centroid[0] + left, centroid[1] + top)
-				print("shifted centroid from df.py: ", centroid)
+#				print("shifted centroid from df.py: ", centroid)
 				#cv2.putText(processed_image, "C", centroid,cv2.FONT_HERSHEY_SIMPLEX,0.5,(255,255,255),1, cv2.LINE_AA)
 			else:
 				centroid = (w/2, h/2)
@@ -94,13 +104,12 @@ def callback(data):
 		centroid = (w/2, h/2)
 		processed_image = cv_image
 
-	
 	#NOW if centroid[0] is in the left half turn left, right turn right, else, stop
 
-	print("centroid after for loop: ", centroid)
+#	print("centroid after for loop: ", centroid)
 
-	print("scaling factors: ", w, h)
-	
+#	print("scaling factors: ", w, h)
+
 	centroid = (centroid[0] / float(w), centroid[1] / float(h))
 
 	print("scaled centroid: ", centroid)
