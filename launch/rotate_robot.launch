@@ -1,0 +1,5 @@
+<launch>
+	<include file="$(find turtlebot3_bringup)/launch/turtlebot3_camera_robot.launch"/>
+	<node name="find_object_node" pkg="team19_object_follower" type="find_object" output="screen" />
+	<node name="rotate_robot_node" pkg="team19_object_follower" type="rotate_robot" output="screen" />
+</launch>
